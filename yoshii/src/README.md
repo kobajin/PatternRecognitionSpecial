@@ -41,4 +41,5 @@ Since AIC considers the number of parameters in the model as a penalty, using AI
 
 We can see such tendencies in the above table, and by considering AIC, the optimal number of K is 4.
 We can also check the fact by drawing data on a 3D graph
+
 ![em](./em_algorithm/yRryXbjSky.png)
