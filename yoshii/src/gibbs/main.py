@@ -79,7 +79,7 @@ class GMM:
                         if np.abs(next_likelihood - old_likelihood) < self.eps:
                                 break
                         else:
-                                print('likelihood' + str(next_likelihood))
+                                print('likelihood: ' + str(next_likelihood))
                                 old_likelihood = next_likelihood
 
                 params = {
@@ -120,7 +120,13 @@ if __name__ == "__main__":
         # read csv and learn
         dat = pd.read_csv(args.src, header=None).values
         gmm = GMM(k=4, max_iteration=100)
-        res, params = gmm.fit_predict(dat)
+        while True:
+                try:
+                        res, params = gmm.fit_predict(dat)
+                        break
+                except np.linalg.LinAlgError as e:
+                        print("Encountered with unsuitable initial values. Trying next values.")
+                        pass     
 
         # output csv
         pd.DataFrame(res).to_csv(

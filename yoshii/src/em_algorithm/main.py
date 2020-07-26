@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # GaussianMixtureModel with EM algorithm
 class GMM:
-        def __init__(self, k, max_iteration, eps=0.0001):
+        def __init__(self, k, max_iteration, eps=0.1):
                 self.k = k
                 self.max_iteration = max_iteration
                 self.eps = eps
