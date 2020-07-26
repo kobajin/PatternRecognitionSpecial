@@ -106,7 +106,7 @@ class GMM:
                 return cov_params + mu_params + pi_params
 
         def aic(self, X):
-                return -2 * (self.likelihood(X) + self.n_parameters())
+                return -2 * (self.likelihood(X) - self.n_parameters())
                 
 if __name__ == "__main__":
         # prepare argparser and parse commandline options

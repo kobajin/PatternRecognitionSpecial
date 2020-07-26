@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # GaussianMixtureModel with Gibbs sampling
 class GMM:
-        def __init__(self, k, max_iteration, eps=0.0001):
+        def __init__(self, k, max_iteration, eps=0.1):
                 self.k = k
                 self.max_iteration = max_iteration
                 self.eps = eps
@@ -120,11 +120,11 @@ if __name__ == "__main__":
         # read csv and learn
         dat = pd.read_csv(args.src, header=None).values
         gmm = GMM(k=4, max_iteration=100)
-        while True:
+        for _ in range(10):
                 try:
                         res, params = gmm.fit_predict(dat)
                         break
-                except np.linalg.LinAlgError as e:
+                except:
                         print("Encountered with unsuitable initial values. Trying next values.")
                         pass     
 
