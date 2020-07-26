@@ -22,7 +22,7 @@ class GMM:
                 self.sigma = np.array([np.eye(d) for _ in range(self.k)])
                 self.pi = np.array([1 / self.k for _ in range(self.k)]) 
 
-                # iterate E and M step
+                # iterate 'E' and 'M' step
                 old_likelihood = self.likelihood(X)
                 for _ in range(self.max_iteration):
                         self.e_step(X)
@@ -32,10 +32,16 @@ class GMM:
                         if np.abs(next_likelihood - old_likelihood) < self.eps:
                                 break
                         else:
-                                print(next_likelihood)
+                                print("likelihood: " + str(next_likelihood))
                                 old_likelihood = next_likelihood
+                
+                params = {
+                        'mu'   : self.mu,
+                        'sigma': self.sigma,
+                        'pi'   : self.pi,
+                }
 
-                return self.gamma
+                return self.gamma, params
 
         # only learn parameters
         def fit(self, X):
@@ -90,26 +96,46 @@ class GMM:
                         l += np.log(t)
 
                 return l
+
+        def n_parameters(self):
+                _, d = self.mu.shape
+                cov_params = self.k * d * (d + 1) / 2
+                mu_params  = self.k * d
+
+                return cov_params + mu_params
+
+        def aic(self, X):
+                return -2 * (self.likelihood(X) + self.n_parameters())
                 
 if __name__ == "__main__":
         # prepare argparser and parse commandline options
         parser = argparse.ArgumentParser()
-        parser.add_argument("src", help="src csv file")
-        parser.add_argument("dst", help="output csv file")
+        parser.add_argument("src", help="src csv file name")
+        parser.add_argument("dst", help="dst csv file name")
+        parser.add_argument("params", help="params file name")
+        parser.add_argument("k", type=int)
         parser.add_argument("-f", "--figure", help="output figure", action="store_true")
         args = parser.parse_args()
 
         # read csv and learn
         dat = pd.read_csv(args.src, header=None).values
-        gmm = GMM(k=4, max_iteration=100)
-        res = gmm.fit_predict(dat)
+        gmm = GMM(k=args.k, max_iteration=100)
+        res, params = gmm.fit_predict(dat)
+        print("AIC: " + str(gmm.aic(dat)))
 
-        # output csv
+        # output result csv and params dat
         pd.DataFrame(res).to_csv(
                 args.dst,
                 header=False,
                 index=False,
         )
+
+        open(args.params, mode='w').close()
+        with open(args.params, mode='a') as f:
+                np.savetxt(f, params['mu'], header='mu')
+                for i in range(len(params['sigma'])):
+                        np.savetxt(f, params['sigma'][i], header='sigma' + str(i))
+                np.savetxt(f, params['pi'], header='pi')
         
         # if --figure is set, then output the graph
         if args.figure:

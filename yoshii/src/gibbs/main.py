@@ -23,12 +23,17 @@ class GMM:
                 self.mu    = np.random.randn(self.k, d)
                 self.sigma = np.array([np.eye(d) for _ in range(self.k)])
 
+                # hyper parameters of Dirichlet 
                 self.alpha = np.random.rand(self.k) * 10
+
+                # hyper parameters of Gaussian-Wishart
                 self.m     = np.random.randn(self.k, d)
                 self.beta  = np.random.randn(self.k) * 10
                 self.W_inv = np.array([np.eye(d) for _ in range(self.k)])
                 self.nu    = d + np.random.rand(self.k) * 10
         
+                # iterate sampling
+                old_likelihood = self.likelihood(X)
                 for _ in range(self.max_iteration):
                         # sampling 'z'
                         z_t = np.zeros((self.k, n))
@@ -68,25 +73,54 @@ class GMM:
                                 # sampling 'mu' and'sigma'
                                 self.sigma[i] = wishart.rvs(df=self.nu[i], scale=np.linalg.inv(self.W_inv[i]))
                                 self.mu[i]    = multivariate_normal.rvs(mean=self.m[i], cov=np.linalg.inv(self.beta[i] * self.sigma[i]))
+        
+                        # calculate likelihood and determine whether to stop iteration
+                        next_likelihood = self.likelihood(X)
+                        if np.abs(next_likelihood - old_likelihood) < self.eps:
+                                break
+                        else:
+                                print('likelihood' + str(next_likelihood))
+                                old_likelihood = next_likelihood
 
-                return self.z
+                params = {
+                        'mu'   : self.mu,   
+                        'sigma': self.sigma,
+                        'pi'   : self.pi,
+                }
+
+                return self.z, params
 
         # only learn parameters
         def fit(self, X):
                 self.fit_predict(X)
-                
+
+        def likelihood(self, X):
+                n, d = X.shape
+
+                l = 0
+                for j in range(n):
+                        t = 0
+                        for i in range(self.k):
+                                rv = multivariate_normal(self.mu[i], self.sigma[i])
+                                t += self.pi[i] * rv.pdf(X[j])
+
+                        l += np.log(t)
+
+                return l
+
 if __name__ == "__main__":
         # prepare argparser and parse commandline options
         parser = argparse.ArgumentParser()
-        parser.add_argument("src", help="src csv file")
-        parser.add_argument("dst", help="output csv file")
+        parser.add_argument("src", help="src csv file name")
+        parser.add_argument("dst", help="dst csv file name")
+        parser.add_argument("params", help="params file name")
         parser.add_argument("-f", "--figure", help="output figure", action="store_true")
         args = parser.parse_args()
 
         # read csv and learn
         dat = pd.read_csv(args.src, header=None).values
         gmm = GMM(k=4, max_iteration=100)
-        res = gmm.fit_predict(dat)
+        res, params = gmm.fit_predict(dat)
 
         # output csv
         pd.DataFrame(res).to_csv(
@@ -94,6 +128,14 @@ if __name__ == "__main__":
                 header=False,
                 index=False,
         )
+        
+        open(args.params, mode='w').close()
+        with open(args.params, mode='a') as f:
+                np.savetxt(f, params['mu'], header='mu')
+                for i in range(len(params['sigma'])):
+                        np.savetxt(f, params['sigma'][i], header='sigma' + str(i))
+                np.savetxt(f, params['pi'], header='pi')
+
         
         # if --figure is set, then output the graph
         if args.figure:
