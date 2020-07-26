@@ -20,4 +20,4 @@ Please try sometimes to avoid this error.
 # appropriate K
 
 We can also check the fact by drawing data on a 3D graph
-![em](./em_algorithmyRryXbjSky.png)
+![em](./em_algorithm/yRryXbjSky.png)
