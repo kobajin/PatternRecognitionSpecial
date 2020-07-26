@@ -1,5 +1,5 @@
 # EM algorithm
-In './em_algorithm', run
+In `./em_algorithm`, run
 ```
 python main.py x.csz z.csv params.dat --figure
 ```
@@ -7,7 +7,7 @@ python main.py x.csz z.csv params.dat --figure
 '--figure' is optional, we can check 3D graph of the data colored by each class.
 
 # Gibbs sampling
-In './gibbs', run
+In `./gibbs`, run
 ```
 python main.py x.csz z.csv params.dat --figure
 ```
