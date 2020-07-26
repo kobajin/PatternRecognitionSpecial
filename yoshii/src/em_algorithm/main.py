@@ -114,13 +114,12 @@ if __name__ == "__main__":
         parser.add_argument("src", help="src csv file name")
         parser.add_argument("dst", help="dst csv file name")
         parser.add_argument("params", help="params file name")
-        parser.add_argument("k", type=int)
         parser.add_argument("-f", "--figure", help="output figure", action="store_true")
         args = parser.parse_args()
 
         # read csv and learn
         dat = pd.read_csv(args.src, header=None).values
-        gmm = GMM(k=args.k, max_iteration=100)
+        gmm = GMM(k=4, max_iteration=100)
         res, params = gmm.fit_predict(dat)
         print("AIC: " + str(gmm.aic(dat)))
 
