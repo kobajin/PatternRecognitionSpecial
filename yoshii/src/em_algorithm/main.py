@@ -101,8 +101,9 @@ class GMM:
                 _, d = self.mu.shape
                 cov_params = self.k * d * (d + 1) / 2
                 mu_params  = self.k * d
+                pi_params  = self.k - 1
 
-                return cov_params + mu_params
+                return cov_params + mu_params + pi_params
 
         def aic(self, X):
                 return -2 * (self.likelihood(X) + self.n_parameters())
